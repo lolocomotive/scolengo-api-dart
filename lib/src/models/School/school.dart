@@ -26,11 +26,13 @@ class School extends BaseResponse {
     this.emsOIDCWellKnownUrl,
     this.distance,
     required super.id,
+    required super.type,
   });
 
   static School fromJson(Map<String, dynamic> json) {
     return School(
       id: json['id'],
+      type: json['type'],
       name: json['name'],
       addressLine1: json['addressLine1'],
       addressLine2: json['addressLine2'],

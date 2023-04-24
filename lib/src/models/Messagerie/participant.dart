@@ -7,18 +7,20 @@ class Participant extends BaseResponse {
   String? label;
   bool fromGroup;
   User? person;
-  Participant(
-      {required this.category,
-      required this.additionalInfo,
-      this.label,
-      required this.fromGroup,
-      required super.id,
-      this.person});
+  Participant({
+    required this.category,
+    required this.additionalInfo,
+    this.label,
+    required this.fromGroup,
+    required super.id,
+    this.person,
+    required super.type,
+  });
 
   static Participant fromJson(Map<String, dynamic> json) {
-    //TODO add relationships
     return Participant(
       id: json['id'],
+      type: json['type'],
       category: json['category'],
       additionalInfo: json['additionalInfo'],
       label: json['label'],

@@ -14,11 +14,12 @@ class UsersMailSettings extends BaseResponse {
     required this.signature,
     required this.contacts,
     required super.id,
+    required super.type,
   });
   static UsersMailSettings fromJson(Map<String, dynamic> json) {
-    //TODO add relationships
     return UsersMailSettings(
       id: json['id'],
+      type: json['type'],
       maxCharsInParticipationContent: json['maxCharsInParticipationContent'],
       maxCharsInCommunicationSubject: json['maxCharsInCommunicationSubject'],
       folders: json['folders']
@@ -37,21 +38,23 @@ enum FolderType { INBOX, SENT, DRAFTS, TRASH, PERSONAL, MODERATION }
 
 class Folder extends BaseResponse {
   String name;
-  FolderType type;
+  FolderType folderType;
   int position;
 
   Folder({
     required this.name,
-    required this.type,
+    required this.folderType,
     required this.position,
     required super.id,
+    required super.type,
   });
 
   static Folder fromJson(Map<String, dynamic> json) {
     return Folder(
       id: json['id'],
+      type: json['type'],
       name: json['name'],
-      type: FolderType.values.firstWhere(
+      folderType: FolderType.values.firstWhere(
           (element) => element.toString() == 'FolderType.${json['type']}'),
       position: json['position'],
     );
@@ -63,11 +66,13 @@ class Signature extends BaseResponse {
   Signature({
     required this.content,
     required super.id,
+    required super.type,
   });
 
   static Signature fromJson(Map<String, dynamic> json) {
     return Signature(
       id: json['id'],
+      type: json['type'],
       content: json['content'],
     );
   }
@@ -82,11 +87,13 @@ class PersonContact extends Contact {
     required this.linksWithUser,
     required this.person,
     required super.id,
+    required super.type,
   });
 
   static PersonContact fromJson(Map<String, dynamic> json) {
     return PersonContact(
       id: json['id'],
+      type: json['type'],
       name: json['name'],
       linksWithUser: json['linksWithUser']
           ?.map<LinkWithUser>((link) => LinkWithUser.fromJson(link))
@@ -97,7 +104,7 @@ class PersonContact extends Contact {
 }
 
 abstract class Contact extends BaseResponse {
-  Contact({required super.id});
+  Contact({required super.id, required super.type});
 
   static Contact fromJson(Map<String, dynamic> json) {
     if (json['type'] == 'personContact') {
@@ -118,11 +125,13 @@ class GroupContact extends Contact {
     required this.linksWithUser,
     this.personContacts,
     required super.id,
+    required super.type,
   });
 
   static GroupContact fromJson(Map<String, dynamic> json) {
     return GroupContact(
       id: json['id'],
+      type: json['type'],
       label: json['label'],
       linksWithUser: json['linksWithUser']
           ?.map<LinkWithUser>((link) => LinkWithUser.fromJson(link))

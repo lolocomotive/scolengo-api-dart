@@ -28,12 +28,14 @@ class SchoolInfo extends BaseResponse {
     required this.attachments,
     required super.id,
     this.author,
+    required super.type,
   });
 
   static SchoolInfo fromJson(Map<String, dynamic> json) {
     print(json);
     return SchoolInfo(
       id: json['id'],
+      type: json['type'],
       publicationDateTime: json['publicationDateTime'],
       title: json['title'],
       shortContent: json['shortContent'],

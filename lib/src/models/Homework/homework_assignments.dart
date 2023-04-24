@@ -36,11 +36,13 @@ class HomeworkAssignment extends BaseResponse {
     this.individualCorrectedWork,
     this.commonCorrectedWork,
     required super.id,
+    required super.type,
   });
 
   static HomeworkAssignment fromJson(Map<String, dynamic> json) {
     return HomeworkAssignment(
       id: json['id'],
+      type: json['type'],
       title: json['title'],
       html: json['html'],
       dueDateTime: json['dueDateTime'],
@@ -73,11 +75,13 @@ class CorrectionWork extends BaseResponse {
     required this.html,
     required this.correctionDate,
     required super.id,
+    required super.type,
   });
 
   static CorrectionWork fromJson(Map<String, dynamic> json) {
     return CorrectionWork(
       id: json['id'],
+      type: json['type'],
       html: json['html'],
       correctionDate: json['correctionDate'],
     );

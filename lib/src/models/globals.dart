@@ -7,11 +7,20 @@ class Reference<Type> {
   });
 }
 
-class BaseResponse<Attributes, Relationships> {
+abstract class BaseResponse<Attributes, Relationships> {
+  String type;
   String id;
   BaseResponse({
+    required this.type,
     required this.id,
   });
+
+  Map<String, String> toMap() {
+    return {
+      'type': type,
+      'id': id,
+    };
+  }
 }
 
 class SkolengoResponse<Data> {

@@ -8,11 +8,13 @@ class AbsenceReason extends BaseResponse {
     required this.code,
     required this.longLabel,
     required super.id,
+    required super.type,
   });
 
   static AbsenceReason fromJson(Map<String, dynamic> json) {
     return AbsenceReason(
       id: json['id'],
+      type: json['type'],
       code: json['code'],
       longLabel: json['longLabel'],
     );

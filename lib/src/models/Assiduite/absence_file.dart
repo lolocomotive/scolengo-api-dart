@@ -3,12 +3,14 @@ import 'package:scolengo_api_dart/src/models/globals.dart';
 
 class AbsenceFile extends BaseResponse {
   AbsenceFileState currentState;
-  AbsenceFile({required super.id, required this.currentState});
+  AbsenceFile(
+      {required super.id, required this.currentState, required super.type});
 
   static AbsenceFile fromJson(Map<String, dynamic> json) {
     return AbsenceFile(
       id: json['id'],
       currentState: AbsenceFileState.fromJson(json['currentState']),
+      type: json['type'],
     );
   }
 }
@@ -29,10 +31,12 @@ class AbsenceFileState extends BaseResponse {
     required this.absenceFileStatus,
     required this.absenceReason,
     required super.id,
+    required super.type,
   });
 
   static AbsenceFileState fromJson(Map<String, dynamic> json) {
     return AbsenceFileState(
+      type: json['type'],
       id: json['id'],
       creationDateTime: json['creationDateTime'],
       absenceStartDateTime: json['absenceStartDateTime'],

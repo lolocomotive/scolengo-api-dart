@@ -11,11 +11,13 @@ class EvaluationSettings extends BaseResponse {
     required this.evaluationsDetailsAvailable,
     required super.id,
     required this.periods,
+    required super.type,
   });
 
   static EvaluationSettings fromJson(Map<String, dynamic> json) {
     return EvaluationSettings(
       id: json['id'],
+      type: json['type'],
       periodicReportsEnabled: json['periodicReportsEnabled'],
       skillsEnabled: json['skillsEnabled'],
       evaluationsDetailsAvailable: json['evaluationsDetailsAvailable'],
@@ -33,10 +35,12 @@ class Period extends BaseResponse {
     required this.startDate,
     required this.endDate,
     required super.id,
+    required super.type,
   });
   static Period fromJson(Map<String, dynamic> json) {
     return Period(
       id: json['id'],
+      type: json['type'],
       label: json['label'],
       startDate: json['startDate'],
       endDate: json['endDate'],

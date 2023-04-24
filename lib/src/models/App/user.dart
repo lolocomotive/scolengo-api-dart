@@ -44,6 +44,7 @@ class User extends BaseResponse {
 
   User({
     required super.id,
+    required super.type,
     this.title,
     this.className,
     this.dateOfBirth,
@@ -68,6 +69,7 @@ class User extends BaseResponse {
   static User fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
+      type: json['type'],
       title: json['title'],
       className: json['className'],
       dateOfBirth: json['dateOfBirth'],

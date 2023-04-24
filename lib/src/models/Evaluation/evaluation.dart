@@ -11,11 +11,13 @@ class Evaluation extends BaseResponse {
     required this.scale,
     required this.studentAverage,
     required super.id,
+    required super.type,
   });
   static Evaluation fromJson(Map<String, dynamic> json) {
     //TODO add relationships
     return Evaluation(
       id: json['id'],
+      type: json['type'],
       coefficient: json['coefficient'],
       average: json['average'],
       scale: json['scale'],

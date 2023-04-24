@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart';
@@ -45,6 +46,16 @@ class Skolengo {
         : '?${params.entries.map((e) => '${e.key}=${e.value}').reduce((value, element) => '$value&$element')}';
     final Uri uri = Uri.parse(url + path + paramString);
     headers ??= this.headers;
+
+    print('Request $method $path');
+    if (body != null) {
+      print('\tBody: $body');
+    }
+    if (paramString != '') {
+      print('\tParams: $paramString');
+    }
+    print('\tHeaders: $headers');
+
     Response response;
     switch (method) {
       case 'GET':
@@ -81,7 +92,7 @@ class Skolengo {
     if (response.statusCode >= 400) {
       throw Exception('Error ${response.statusCode} ${response.body}');
     }
-
+    if (response.statusCode == 204) return {};
     return Japx.decode(jsonDecode(response.body));
   }
 
@@ -280,16 +291,28 @@ class Skolengo {
     );
   }
 
-//FIXME This is copilot generated code, it doesn't work
-  Future<HomeworkAssignment> patchHomeworkAssignment(
-      String studentId, String homeworkAssignmentId, status) async {
-    final results = await _invokeApi(
-        '/homework-assignments/$homeworkAssignmentId', 'PATCH',
-        params: {
+  Future<SkolengoResponse<HomeworkAssignment>> patchHomeworkAssignment(
+      String studentId, String homeworkAssignmentId, bool done) async {
+    final results =
+        await _invokeApi('/homework-assignments/$homeworkAssignmentId', 'PATCH',
+            body: jsonEncode({
+              'data': {
+                'type': 'homework',
+                'id': homeworkAssignmentId,
+                'attributes': {
+                  'done': done,
+                }
+              }
+            }),
+            params: {
           'filter[student.id]': studentId,
-          'data[attributes][status]': status,
+          'include':
+              'subject,teacher,pedagogicContent,individualCorrectedWork,individualCorrectedWork.attachments,individualCorrectedWork.audio,commonCorrectedWork,commonCorrectedWork.attachments,commonCorrectedWork.audio,commonCorrectedWork.pedagogicContent,attachments,audio,teacher.person',
         });
-    return HomeworkAssignment.fromJson(results['data']);
+    return SkolengoResponse(
+      data: HomeworkAssignment.fromJson(results['data']),
+      raw: results,
+    );
   }
 
   Future<SkolengoResponse<UsersMailSettings>> getUsersMailSettings(
@@ -351,6 +374,46 @@ class Skolengo {
       data: results['data']
           .map<Participant>((e) => Participant.fromJson(e))
           .toList(),
+      raw: results,
+    );
+  }
+
+  Future<SkolengoResponse<void>> patchCommunicationFolders(
+      String communicationId, List<Folder> folders, String userId) async {
+    final results = await _invokeApi(
+        '/communications/$communicationId/relationships/folders', 'PATCH',
+        body: jsonEncode({
+          'data': folders
+              .map((e) => {
+                    'id': e.id,
+                  })
+              .toList(),
+        }),
+        params: {
+          'filter[user.id]': userId,
+        });
+    return SkolengoResponse(
+      data: null,
+      raw: results,
+    );
+  }
+
+  Future<SkolengoResponse<Communication>> postCommunication(String subject,
+      String firstParticipationContent, List<Contact> toRecipients,
+      {List<Contact>? ccRecipients, List<Contact>? bccRecipients}) async {
+    final results = await _invokeApi('/communications', 'POST',
+        body: jsonEncode(Japx.encode({
+          'type': 'communication',
+          'subject': subject,
+          'firstParticipationContent': firstParticipationContent,
+          'toRecipients': toRecipients.map((e) => e.toMap()).toList(),
+          if (ccRecipients != null)
+            'ccRecipients': ccRecipients.map((e) => e.toMap()).toList(),
+          if (bccRecipients != null)
+            'bccRecipients': bccRecipients.map((e) => e.toMap()).toList(),
+        })));
+    return SkolengoResponse(
+      data: Communication.fromJson(results['data']),
       raw: results,
     );
   }

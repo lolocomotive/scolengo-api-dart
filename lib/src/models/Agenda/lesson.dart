@@ -10,9 +10,11 @@ class Subject extends BaseResponse {
     required this.label,
     required this.color,
     required super.id,
+    required super.type,
   });
   static Subject fromJson(Map<String, dynamic> json) {
     return Subject(
+      type: json['type'],
       id: json['id'],
       label: json['label'],
       color: json['color'],
@@ -30,10 +32,12 @@ class LessonContent extends BaseResponse {
     required this.title,
     this.url,
     this.attachments,
+    required super.type,
     required super.id,
   });
   static LessonContent fromJson(Map<String, dynamic> json) {
     return LessonContent(
+      type: json['type'],
       id: json['id'],
       html: json['html'],
       title: json['title'],
@@ -70,9 +74,11 @@ class Lesson extends BaseResponse {
     this.toDoForTheLesson,
     this.toDoAfterTheLesson,
     required super.id,
+    required super.type,
   });
   static Lesson fromJson(Map<String, dynamic> json) {
     return Lesson(
+      type: json['type'],
       id: json['id'],
       startDateTime: json['startDateTime'],
       endDateTime: json['endDateTime'],

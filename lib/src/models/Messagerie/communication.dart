@@ -10,7 +10,7 @@ class Communication extends BaseResponse {
   bool? replyToSenderAllowed;
   bool? readTrackingEnabled;
   String? firstParticipationContent;
-  Participation lastParticipation;
+  Participation? lastParticipation;
   Communication({
     required this.subject,
     this.participationsNumber,
@@ -20,12 +20,14 @@ class Communication extends BaseResponse {
     this.replyToSenderAllowed,
     this.readTrackingEnabled,
     this.firstParticipationContent,
-    required this.lastParticipation,
+    this.lastParticipation,
     required super.id,
+    required super.type,
   });
   static Communication fromJson(Map<String, dynamic> json) {
     return Communication(
       id: json['id'],
+      type: json['type'],
       subject: json['subject'],
       participationsNumber: json['participationsNumber'],
       recipientsSummary: json['recipientsSummary'],
@@ -34,7 +36,9 @@ class Communication extends BaseResponse {
       replyToSenderAllowed: json['replyToSenderAllowed'],
       readTrackingEnabled: json['readTrackingEnabled'],
       firstParticipationContent: json['firstParticipationContent'],
-      lastParticipation: Participation.fromJson(json['lastParticipation']),
+      lastParticipation: json['lastParticipation'] == null
+          ? null
+          : Participation.fromJson(json['lastParticipation']),
     );
   }
 }

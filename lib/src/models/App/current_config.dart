@@ -13,10 +13,12 @@ class CurrentConfig extends BaseResponse {
     required this.apiCallMaxRetries,
     required this.skoAppDeploymentInfoUrl,
     required super.id,
+    required super.type,
   });
   static CurrentConfig fromJson(Map<String, dynamic> json) {
     return CurrentConfig(
       id: json['id'],
+      type: json['type'],
       latestDeployedSkoAppVersion: json['latestDeployedSkoAppVersion'],
       latestSupportedSkoAppVersion: json['latestSupportedSkoAppVersion'],
       apiCallRetryDelay: json['apiCallRetryDelay'],

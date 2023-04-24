@@ -22,12 +22,14 @@ class PeriodicReportsFile extends BaseResponse {
     required this.size,
     required this.url,
     required super.id,
+    required super.type,
   });
 
   static PeriodicReportsFile fromJson(Map<String, dynamic> json) {
     //TODO add relationships
     return PeriodicReportsFile(
       id: json['id'],
+      type: json['type'],
       alternativeText: json['alternativeText'],
       name: json['name'],
       mimeType: json['mimeType'],

@@ -13,11 +13,13 @@ class Attachment extends BaseResponse {
     required this.size,
     required this.url,
     required super.id,
+    required super.type,
   });
 
   static Attachment fromJson(Map<String, dynamic> json) {
     return Attachment(
       id: json['id'],
+      type: json['type'],
       name: json['name'],
       mimeType: json['mimeType'],
       mimeTypeLabel: json['mimeTypeLabel'],
@@ -37,11 +39,13 @@ class PublicAttachment extends Attachment {
     required super.url,
     required super.id,
     required this.alternativeText,
+    required super.type,
   });
 
   static PublicAttachment fromJson(Map<String, dynamic> json) {
     return PublicAttachment(
       id: json['id'],
+      type: json['type'],
       alternativeText: json['alternativeText'],
       name: json['name'],
       mimeType: json['mimeType'],

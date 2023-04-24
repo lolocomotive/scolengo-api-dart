@@ -15,11 +15,13 @@ class Participation extends BaseResponse {
     this.attachments,
     this.sender,
     required super.id,
+    required super.type,
   });
 
   static Participation fromJson(Map<String, dynamic> json) {
     return Participation(
       id: json['id'],
+      type: json['type'],
       dateTime: json['dateTime'],
       content: json['content'],
       read: json['read'],
