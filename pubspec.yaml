@@ -12,3 +12,4 @@ dev_dependencies:
 dependencies:
     http: ^0.13.5
     japx: ^2.1.0
+    openid_client: ^0.4.7

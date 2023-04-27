@@ -46,4 +46,22 @@ class School extends BaseResponse {
       distance: json['distance'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'name': name,
+      'addressLine1': addressLine1,
+      'addressLine2': addressLine2,
+      'addressLine3': addressLine3,
+      'zipCode': zipCode,
+      'city': city,
+      'country': country,
+      'homePageUrl': homePageUrl,
+      'emsCode': emsCode,
+      'emsOIDCWellKnownUrl': emsOIDCWellKnownUrl,
+      'distance': distance,
+    };
+  }
 }

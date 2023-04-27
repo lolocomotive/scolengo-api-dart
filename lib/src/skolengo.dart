@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart';
+import 'package:http/http.dart' hide Client;
 import 'package:japx/japx.dart';
+import 'package:openid_client/openid_client.dart';
 import 'package:scolengo_api_dart/src/models/Agenda/agenda.dart';
 import 'package:scolengo_api_dart/src/models/Agenda/lesson.dart';
 import 'package:scolengo_api_dart/src/models/App/current_config.dart';
@@ -23,12 +24,37 @@ import 'package:scolengo_api_dart/src/models/globals.dart';
 
 class Skolengo {
   static const url = 'https://api.skolengo.com/api/v1/bff-sko-app';
-  final String token;
-  final Map<String, String> headers;
-  Skolengo({
-    required this.token,
-    required this.headers,
-  });
+  late final Map<String, String> headers;
+  final Credential? credentials;
+  static final OID_CLIENT_ID = String.fromCharCodes(
+    base64.decode(
+        'U2tvQXBwLlByb2QuMGQzNDkyMTctOWE0ZS00MWVjLTlhZjktZGY5ZTY5ZTA5NDk0'),
+  );
+  static final OID_CLIENT_SECRET = String.fromCharCodes(
+    base64.decode('N2NiNGQ5YTgtMjU4MC00MDQxLTlhZTgtZDU4MDM4NjkxODNm'),
+  );
+
+  factory Skolengo.unauthenticated() {
+    return Skolengo(credentials: null, headers: {});
+  }
+  factory Skolengo.fromCredentials(Credential credentials, School school,
+      [Map<String, String>? additionnalHeaders]) {
+    final headers = <String, String>{};
+    headers.addAll({
+      'Authorization':
+          'Bearer ${TokenResponse.fromJson(credentials.response!).accessToken}',
+      'X-Skolengo-Date-Format': 'utc',
+      'X-Skolengo-School-Id': school.id,
+      'X-Skolengo-Ems-Code': school.emsCode!,
+    });
+    if (additionnalHeaders != null) {
+      headers.addAll(additionnalHeaders);
+    }
+    return Skolengo(credentials: credentials, headers: headers);
+  }
+
+  Skolengo({required this.credentials, required this.headers});
+
   Future<Map<String, dynamic>> _invokeApi(
     String path,
     String method, {
@@ -78,8 +104,10 @@ class Skolengo {
     }
 
     if (response.statusCode == 401) {
-      //TODO refresh token
-      throw UnimplementedError();
+      //Refresh token
+      await credentials?.getTokenResponse(true);
+      return _invokeApi(path, method,
+          headers: headers, params: params, body: body, numTries: numTries + 1);
     }
 
     if (response.statusCode == 503) {
@@ -478,6 +506,16 @@ class Skolengo {
           .map<AbsenceReason>((e) => AbsenceReason.fromJson(e))
           .toList(),
       raw: results,
+    );
+  }
+
+  Future<Client> getOIDClient(School school) async {
+    final skolengoIssuer =
+        await Issuer.discover(Uri.parse(school.emsOIDCWellKnownUrl!));
+    return Client(
+      skolengoIssuer,
+      OID_CLIENT_ID,
+      clientSecret: OID_CLIENT_SECRET,
     );
   }
 }
