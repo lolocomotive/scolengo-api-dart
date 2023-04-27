@@ -28,7 +28,8 @@ class Participation extends BaseResponse {
       attachments: json['attachments']
           ?.map<Attachment>((attachment) => Attachment.fromJson(attachment))
           .toList(),
-      sender: Participant.fromJson(json['sender']),
+      sender:
+          json['sender'] == null ? null : Participant.fromJson(json['sender']),
     );
   }
 }

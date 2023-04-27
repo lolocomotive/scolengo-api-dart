@@ -418,6 +418,30 @@ class Skolengo {
     );
   }
 
+  Future<SkolengoResponse<Participation>> postCommunicationParticipation(
+      String communicationId, String content) async {
+    final results = await _invokeApi(
+      '/participations',
+      'POST',
+      body: jsonEncode(
+        Japx.encode(
+          {
+            'type': 'participation',
+            'content': content,
+            'communication': {
+              'type': 'communication',
+              'id': communicationId,
+            },
+          },
+        ),
+      ),
+    );
+    return SkolengoResponse(
+      data: Participation.fromJson(results['data']),
+      raw: results,
+    );
+  }
+
   Future<SkolengoResponse<List<AbsenceFile>>> getAbsenceFiles(
       String studentId) async {
     final results = await _invokeApi('/absence-files', 'GET', params: {
