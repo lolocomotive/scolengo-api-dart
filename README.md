@@ -27,8 +27,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:openid_client/openid_client_io.dart';
-import 'package:scolengo_api_dart/src/models/School/school.dart';
-import 'package:scolengo_api_dart/src/skolengo.dart';
+import 'package:scolengo_api/src/models/School/school.dart';
+import 'package:scolengo_api/src/skolengo.dart';
 
 void main() async {
   final Credential credentials;

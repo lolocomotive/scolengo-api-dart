@@ -1,6 +1,6 @@
-import 'package:scolengo_api_dart/src/models/Agenda/lesson.dart';
-import 'package:scolengo_api_dart/src/models/Homework/homework_assignments.dart';
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/Agenda/lesson.dart';
+import 'package:scolengo_api/src/models/Homework/homework_assignments.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class Agenda extends BaseResponse {
   String date;

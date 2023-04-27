@@ -1,5 +1,5 @@
-import 'package:scolengo_api_dart/src/models/Assiduite/absence_reason.dart';
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/Assiduite/absence_reason.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class AbsenceFile extends BaseResponse {
   AbsenceFileState currentState;

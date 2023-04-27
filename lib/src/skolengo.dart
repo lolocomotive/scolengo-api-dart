@@ -1,26 +1,28 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' hide Client;
 import 'package:japx/japx.dart';
 import 'package:openid_client/openid_client.dart';
-import 'package:scolengo_api_dart/src/models/Agenda/agenda.dart';
-import 'package:scolengo_api_dart/src/models/Agenda/lesson.dart';
-import 'package:scolengo_api_dart/src/models/App/current_config.dart';
-import 'package:scolengo_api_dart/src/models/App/user.dart';
-import 'package:scolengo_api_dart/src/models/Assiduite/absence_file.dart';
-import 'package:scolengo_api_dart/src/models/Assiduite/absence_reason.dart';
-import 'package:scolengo_api_dart/src/models/Evaluation/evaluation.dart';
-import 'package:scolengo_api_dart/src/models/Evaluation/evaluation_settings.dart';
-import 'package:scolengo_api_dart/src/models/Evaluation/preiodic_reports_file.dart';
-import 'package:scolengo_api_dart/src/models/Homework/homework_assignments.dart';
-import 'package:scolengo_api_dart/src/models/Messagerie/communication.dart';
-import 'package:scolengo_api_dart/src/models/Messagerie/participant.dart';
-import 'package:scolengo_api_dart/src/models/Messagerie/participation.dart';
-import 'package:scolengo_api_dart/src/models/Messagerie/user_mail_settings.dart';
-import 'package:scolengo_api_dart/src/models/School/school.dart';
-import 'package:scolengo_api_dart/src/models/School/school_info.dart';
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/Agenda/agenda.dart';
+import 'package:scolengo_api/src/models/Agenda/lesson.dart';
+import 'package:scolengo_api/src/models/App/current_config.dart';
+import 'package:scolengo_api/src/models/App/user.dart';
+import 'package:scolengo_api/src/models/Assiduite/absence_file.dart';
+import 'package:scolengo_api/src/models/Assiduite/absence_reason.dart';
+import 'package:scolengo_api/src/models/Evaluation/evaluation.dart';
+import 'package:scolengo_api/src/models/Evaluation/evaluation_settings.dart';
+import 'package:scolengo_api/src/models/Evaluation/preiodic_reports_file.dart';
+import 'package:scolengo_api/src/models/Homework/homework_assignments.dart';
+import 'package:scolengo_api/src/models/Messagerie/communication.dart';
+import 'package:scolengo_api/src/models/Messagerie/participant.dart';
+import 'package:scolengo_api/src/models/Messagerie/participation.dart';
+import 'package:scolengo_api/src/models/Messagerie/user_mail_settings.dart';
+import 'package:scolengo_api/src/models/School/school.dart';
+import 'package:scolengo_api/src/models/School/school_info.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class Skolengo {
   static const url = 'https://api.skolengo.com/api/v1/bff-sko-app';

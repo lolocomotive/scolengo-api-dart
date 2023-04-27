@@ -1,4 +1,4 @@
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class CurrentConfig extends BaseResponse {
   String latestDeployedSkoAppVersion;

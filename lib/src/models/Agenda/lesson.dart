@@ -1,7 +1,7 @@
-import 'package:scolengo_api_dart/src/models/App/user.dart';
-import 'package:scolengo_api_dart/src/models/Homework/homework_assignments.dart';
-import 'package:scolengo_api_dart/src/models/School/attachment.dart';
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/App/user.dart';
+import 'package:scolengo_api/src/models/Homework/homework_assignments.dart';
+import 'package:scolengo_api/src/models/School/attachment.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class Subject extends BaseResponse {
   String label;

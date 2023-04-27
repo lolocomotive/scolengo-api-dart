@@ -1,5 +1,5 @@
-import 'package:scolengo_api_dart/src/models/Messagerie/participation.dart';
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/Messagerie/participation.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class Communication extends BaseResponse {
   String subject;

@@ -1,5 +1,5 @@
-import 'package:scolengo_api_dart/src/models/App/user.dart';
-import 'package:scolengo_api_dart/src/models/globals.dart';
+import 'package:scolengo_api/src/models/App/user.dart';
+import 'package:scolengo_api/src/models/globals.dart';
 
 class UsersMailSettings extends BaseResponse {
   num maxCharsInParticipationContent;
@@ -143,6 +143,7 @@ class GroupContact extends Contact {
   }
 }
 
+// ignore: constant_identifier_names
 enum LinkType { FAMILY, GROUP, SCHOOL }
 
 class LinkWithUser {
