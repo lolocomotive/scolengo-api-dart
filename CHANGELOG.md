@@ -1,3 +1,7 @@
+## 0.0.4
+
+Fix getEvaluations
+
 ## 0.0.3
 
 Add models to exports

@@ -206,8 +206,7 @@ class Skolengo {
     ); //TODO check if there can be multiple
   }
 
-  //TODO test this
-  Future<SkolengoResponse<List<Evaluation>>> getEvaluations(
+  Future<SkolengoResponse<List<EvaluationService>>> getEvaluationServices(
       String studentId, String periodID) async {
     final results = await _invokeApi('/evaluation-services', 'GET', params: {
       'filter[student.id]': studentId,
@@ -217,14 +216,14 @@ class Skolengo {
     });
     return SkolengoResponse(
       data: results['data']
-          .map<Evaluation>((e) => Evaluation.fromJson(e))
+          .map<EvaluationService>((e) => EvaluationService.fromJson(e))
           .toList(),
       raw: results,
     );
   }
 
-  //TODO test this
-  Future<SkolengoResponse<Evaluation>> getEvaluation(
+//FIXME test this
+  Future<SkolengoResponse<Evaluation?>> getEvaluation(
       String studentId, String evaluationId) async {
     final results =
         await _invokeApi('/evaluations/$evaluationId', 'GET', params: {
@@ -233,7 +232,7 @@ class Skolengo {
           'evaluationService,evaluationService.subject,evaluationService.teachers,subSubject,subSkills,evaluationResult,evaluationResult.subSkillsEvaluationResults,evaluationResult.subSkillsEvaluationResults.subSkill'
     });
     return SkolengoResponse(
-      data: Evaluation.fromJson(results['data']),
+      data: null,
       raw: results,
     );
   }
