@@ -1,3 +1,7 @@
+## 0.0.3
+
+Add models to exports
+
 ## 0.0.2
 
 Fix package structure

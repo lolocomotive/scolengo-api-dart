@@ -1,3 +1,20 @@
 library scolengo_api;
 
+export 'src/models/Agenda/agenda.dart';
+export 'src/models/Agenda/lesson.dart';
+export 'src/models/App/current_config.dart';
+export 'src/models/App/user.dart';
+export 'src/models/Assiduite/absence_file.dart';
+export 'src/models/Assiduite/absence_reason.dart';
+export 'src/models/Evaluation/evaluation.dart';
+export 'src/models/Evaluation/evaluation_detail.dart';
+export 'src/models/Evaluation/evaluation_settings.dart';
+export 'src/models/Homework/homework_assignments.dart';
+export 'src/models/Messagerie/communication.dart';
+export 'src/models/Messagerie/participant.dart';
+export 'src/models/Messagerie/participation.dart';
+export 'src/models/Messagerie/user_mail_settings.dart';
+export 'src/models/School/attachment.dart';
+export 'src/models/School/school.dart';
+export 'src/models/School/school_info.dart';
 export 'src/skolengo.dart';
