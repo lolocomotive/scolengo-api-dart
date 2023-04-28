@@ -1,3 +1,7 @@
+## 0.0.5
+
+Add date to Evaluation
+
 ## 0.0.4
 
 Fix getEvaluations

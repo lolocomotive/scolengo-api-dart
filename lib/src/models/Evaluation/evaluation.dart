@@ -31,6 +31,7 @@ class Evaluation extends BaseResponse {
   num? studentAverage;
   EvaluationResult result;
   Subject subject;
+  String date;
   /* 
   I can't test those:
     dynamic subSkills;
@@ -44,6 +45,7 @@ class Evaluation extends BaseResponse {
     required this.studentAverage,
     required this.subject,
     required this.result,
+    required this.date,
     required super.type,
     required super.id,
   });
@@ -55,6 +57,7 @@ class Evaluation extends BaseResponse {
       average: json['average'],
       scale: json['scale'],
       subject: subject,
+      date: json['dateTime'],
       result: EvaluationResult.fromJson(json['evaluationResult']),
       studentAverage: json['studentAverage'],
     );
