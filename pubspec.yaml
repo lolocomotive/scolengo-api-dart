@@ -1,10 +1,10 @@
 name: scolengo_api
 description: Unofficial API wrapper for the Skolengo education management system
-version: 0.0.1
+version: 0.0.2
 repository: https://github.com/lolocomotive/skolengo-api-dart
 
 environment:
-    sdk: '>=2.19.6 <3.0.0'
+    sdk: '>=2.19.6 <4.0.0'
 
 dev_dependencies:
     lints: ^2.0.0
