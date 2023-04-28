@@ -16,8 +16,8 @@ class EvaluationService extends BaseResponse {
       id: json['id'],
       type: json['type'],
       evaluations: json['evaluations']
-          .map<Evaluation>((e) => Evaluation.fromJson(e, subject))
-          .toList(),
+          ?.map<Evaluation>((e) => Evaluation.fromJson(e, subject))
+          ?.toList() ?? [],
       subject: subject,
     );
   }
