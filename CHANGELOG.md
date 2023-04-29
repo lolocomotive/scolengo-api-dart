@@ -1,3 +1,7 @@
+## 0.0.6
+
+Add globals to exports
+
 ## 0.0.5
 
 Add date to Evaluation

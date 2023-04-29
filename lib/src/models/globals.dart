@@ -1,12 +1,5 @@
 import 'dart:convert';
 
-class Reference<Type> {
-  String id;
-  Reference({
-    required this.id,
-  });
-}
-
 abstract class BaseResponse<Attributes, Relationships> {
   String type;
   String id;
