@@ -17,5 +17,6 @@ export 'src/models/Messagerie/user_mail_settings.dart';
 export 'src/models/School/attachment.dart';
 export 'src/models/School/school.dart';
 export 'src/models/School/school_info.dart';
+export 'src/models/cache_provider.dart';
 export 'src/models/globals.dart';
 export 'src/skolengo.dart';
