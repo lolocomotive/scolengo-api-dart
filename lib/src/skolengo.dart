@@ -22,12 +22,15 @@ import 'package:scolengo_api/src/models/Messagerie/participation.dart';
 import 'package:scolengo_api/src/models/Messagerie/user_mail_settings.dart';
 import 'package:scolengo_api/src/models/School/school.dart';
 import 'package:scolengo_api/src/models/School/school_info.dart';
+import 'package:scolengo_api/src/models/cache_provider.dart';
 import 'package:scolengo_api/src/models/globals.dart';
 
 class Skolengo {
   static const url = 'https://api.skolengo.com/api/v1/bff-sko-app';
   late final Map<String, String> headers;
   final Credential? credentials;
+  final CacheProvider? cacheProvider;
+  final bool debug;
   static final OID_CLIENT_ID = String.fromCharCodes(
     base64.decode(
         'U2tvQXBwLlByb2QuMGQzNDkyMTctOWE0ZS00MWVjLTlhZjktZGY5ZTY5ZTA5NDk0'),
@@ -39,8 +42,13 @@ class Skolengo {
   factory Skolengo.unauthenticated() {
     return Skolengo(credentials: null, headers: {});
   }
-  factory Skolengo.fromCredentials(Credential credentials, School school,
-      [Map<String, String>? additionnalHeaders]) {
+  factory Skolengo.fromCredentials(
+    Credential credentials,
+    School school, {
+    Map<String, String>? additionnalHeaders,
+    CacheProvider? cacheProvider,
+    bool debug = false,
+  }) {
     final headers = <String, String>{};
     headers.addAll({
       'Authorization':
@@ -52,10 +60,20 @@ class Skolengo {
     if (additionnalHeaders != null) {
       headers.addAll(additionnalHeaders);
     }
-    return Skolengo(credentials: credentials, headers: headers);
+    return Skolengo(
+      credentials: credentials,
+      headers: headers,
+      cacheProvider: cacheProvider,
+      debug: debug,
+    );
   }
 
-  Skolengo({required this.credentials, required this.headers});
+  Skolengo({
+    required this.headers,
+    this.credentials,
+    this.cacheProvider,
+    this.debug = false,
+  });
 
   Future<Map<String, dynamic>> _invokeApi(
     String path,
@@ -65,6 +83,7 @@ class Skolengo {
     Object? body,
     int numTries = 0,
   }) async {
+    final stopwatch = Stopwatch()..start();
     if (numTries > 3) {
       throw Exception('Too many tries');
     }
@@ -74,56 +93,101 @@ class Skolengo {
         : '?${params.entries.map((e) => '${e.key}=${e.value}').reduce((value, element) => '$value&$element')}';
     final Uri uri = Uri.parse(url + path + paramString);
     headers ??= this.headers;
-
-    print('Request $method $path');
-    if (body != null) {
-      print('\tBody: $body');
+    if (debug) {
+      print('$method: $path');
+      if (body != null) {
+        print('\tBody: $body');
+      }
+      if (paramString != '') {
+        print('\tParams: $paramString');
+      }
+      print('\tHeaders: $headers');
     }
-    if (paramString != '') {
-      print('\tParams: $paramString');
-    }
-    print('\tHeaders: $headers');
 
     Response response;
-    switch (method) {
-      case 'GET':
-        response = await get(uri, headers: headers);
-        break;
-      case 'POST':
-        response = await post(uri, headers: headers, body: body);
-        break;
-      case 'DELETE':
-        response = await delete(uri, headers: headers, body: body);
-        break;
-      case 'PUT':
-        response = await put(uri, headers: headers, body: body);
-        break;
-      case 'PATCH':
-        response = await patch(uri, headers: headers, body: body);
-        break;
-      default:
-        response = await get(uri, headers: headers);
+    String responseBody;
+    final shouldCache =
+        await cacheProvider?.shouldUseCache(uri.toString()) ?? false;
+    if (shouldCache) {
+      if (method != 'GET') throw Exception('Only GET requests can be cached');
+      responseBody = await cacheProvider!.get(uri.toString());
+    } else {
+      switch (method) {
+        case 'GET':
+          response = await get(uri, headers: headers);
+          // Only cache GET requests, it doesn't make sense to cache other requests
+          if (cacheProvider?.raw() ?? false) {
+            cacheProvider?.set(uri.toString(), response.body);
+          }
+          break;
+        case 'POST':
+          response = await post(uri, headers: headers, body: body);
+          break;
+        case 'DELETE':
+          response = await delete(uri, headers: headers, body: body);
+          break;
+        case 'PUT':
+          response = await put(uri, headers: headers, body: body);
+          break;
+        case 'PATCH':
+          response = await patch(uri, headers: headers, body: body);
+          break;
+        default:
+          throw UnimplementedError('Method $method not implemented');
+      }
+      responseBody = response.body;
+      if (response.statusCode == 401) {
+        //Refresh token
+        await credentials?.getTokenResponse(true);
+        return _invokeApi(path, method,
+            headers: headers,
+            params: params,
+            body: body,
+            numTries: numTries + 1);
+      }
+
+      if (response.statusCode == 503) {
+        //Retry in 500ms, this happens when Pronote resources are not ready.
+        await Future.delayed(Duration(milliseconds: 500));
+        return _invokeApi(path, method,
+            headers: headers,
+            params: params,
+            body: body,
+            numTries: numTries + 1);
+      }
+
+      if (response.statusCode >= 400) {
+        throw Exception('Error ${response.statusCode} ${response.body}');
+      }
+      if (response.statusCode == 204) return {};
     }
 
-    if (response.statusCode == 401) {
-      //Refresh token
-      await credentials?.getTokenResponse(true);
-      return _invokeApi(path, method,
-          headers: headers, params: params, body: body, numTries: numTries + 1);
+    if (debug) {
+      print('\tResponse size: ${(responseBody.length / 100).round() / 10}kb');
+      print(
+          '\t${shouldCache ? 'Cache r' : 'R'}equest done in ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.reset();
     }
 
-    if (response.statusCode == 503) {
-      //Retry in 500ms, this happens when Pronote resources are not ready.
-      await Future.delayed(Duration(milliseconds: 500));
-      return _invokeApi(path, method,
-          headers: headers, params: params, body: body, numTries: numTries + 1);
+    final json = jsonDecode(responseBody);
+    if (debug) {
+      print('\tParsing done in ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.reset();
     }
+    if (shouldCache && !cacheProvider!.raw()) return json;
 
-    if (response.statusCode >= 400) {
-      throw Exception('Error ${response.statusCode} ${response.body}');
+    final decoded = Japx.decode(json);
+    if (debug) {
+      print('\tJapx done in ${stopwatch.elapsedMilliseconds}ms');
+      stopwatch.reset();
+      final reencoded = jsonEncode(decoded);
+      print(
+          '\tSize after japx: ${(reencoded.length / 100).round() / 10}kb (${stopwatch.elapsedMilliseconds}ms to reencode)');
     }
-    if (response.statusCode == 204) return {};
-    return Japx.decode(jsonDecode(response.body));
+    if (!(cacheProvider?.raw() ?? true)) {
+      cacheProvider?.set(uri.toString(), jsonEncode(decoded));
+    }
+    return decoded;
   }
 
   Future<SkolengoResponse<CurrentConfig>> getAppCurrentConfig() async {

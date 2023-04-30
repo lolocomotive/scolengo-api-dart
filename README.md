@@ -15,6 +15,7 @@ This should work in the command line.
  - Paste the given URL in a browser that already has devtools open on the networking page
  - Copy the URL of the 2nd request ( `sko-app://sign-in-callback?code=...` ) 
  - Open a new browser tab and paste the url, replacing `sko-app://` with `localhost:3000/`
+
  - It should work.
  - We can't provide localhost:300 as redirectUri because then we get an error from the CAS 
 
@@ -59,3 +60,62 @@ Future<Credential> createCredentials(School school, [Skolengo? client]) async {
 ```
 
 If you want to use this in a flutter app, change the createCredentials function according to the [openid_client documentation](https://pub.dev/packages/openid_client)
+
+## Caching the API responses
+
+This library comes with a pretty flexible interface for you to be able to implement your own cache provider.
+As some requests take quite a long time to complete, it might be a good idea to cache the result, in memory, a JSON file, a db or anything else really
+For more details look at the comments in [cache_provider.dart](lib/src/models/cache_provider.dart)
+
+<details>
+
+<summary>Example</summary>
+
+### A cache provider storing the responses in JSON files
+
+This is not a great idea, the example isn't complete and it was written in a rush but this should give a rough idea of how things should be structured.
+
+```dart
+class FSCacheProvider extends CacheProvider {
+  Map<String, String> _index = {};
+
+  @override
+  Future<String> get(String key) async {
+    return await File(filename(key)).readAsString();
+  }
+
+  @override
+  bool raw() => false;
+
+  @override
+  void set(String key, String value) {
+    _index[filename(key)] = DateTime.now().toIso8601String();
+    File('./cache/index.json').createSync(recursive: true);
+    File('./cache/index.json').writeAsString(jsonEncode(_index));
+    File(filename(key))
+      ..createSync(recursive: true)
+      ..writeAsString(value);
+  }
+
+  @override
+  Future<bool> shouldUseCache(String key) async {
+    //TODO compare dates
+    return _index.keys.contains(filename(key));
+  }
+
+  String filename(String url) {
+    return './cache${Uri.parse(url).path}/${Uri.parse(url).query}.json';
+  }
+
+  init() {
+    _index = File('./cache/index.json').existsSync()
+        ? jsonDecode(File('./cache/index.json').readAsStringSync())
+            .map<String, String>(
+                (key, value) => MapEntry(key as String, value as String))
+        : {};
+    File('.cache/index.json').createSync(recursive: true);
+  }
+}
+```
+
+</details>

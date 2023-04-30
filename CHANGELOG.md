@@ -1,3 +1,7 @@
+## 0.0.7
+
+Add cache provider support
+
 ## 0.0.6
 
 Add globals to exports
