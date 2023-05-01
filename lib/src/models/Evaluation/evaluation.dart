@@ -1,5 +1,4 @@
 import 'package:scolengo_api/scolengo_api.dart';
-import 'package:scolengo_api/src/models/globals.dart';
 
 class EvaluationService extends BaseResponse {
   List<Evaluation> evaluations;

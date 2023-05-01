@@ -1,3 +1,7 @@
+## 0.0.8
+
+Fix parsing/typing of school infos
+
 ## 0.0.7
 
 Add cache provider support

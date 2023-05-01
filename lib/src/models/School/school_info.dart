@@ -13,8 +13,8 @@ class SchoolInfo extends BaseResponse {
   String? linkedWebSiteUrl;
   School school;
   User? author;
-  dynamic illustration;
-  dynamic attachments;
+  PublicAttachment? illustration;
+  List<PublicAttachment>? attachments;
   SchoolInfo({
     required this.publicationDateTime,
     required this.title,
@@ -32,7 +32,6 @@ class SchoolInfo extends BaseResponse {
   });
 
   static SchoolInfo fromJson(Map<String, dynamic> json) {
-    print(json);
     return SchoolInfo(
       id: json['id'],
       type: json['type'],
@@ -50,7 +49,9 @@ class SchoolInfo extends BaseResponse {
       illustration: json['illustration'] == null
           ? null
           : PublicAttachment.fromJson(json['illustration']),
-      attachments: json['attachments'],
+      attachments: json['attachments']
+          ?.map<PublicAttachment>((e) => PublicAttachment.fromJson(e))
+          .toList(),
     );
   }
 }
