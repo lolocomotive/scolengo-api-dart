@@ -64,17 +64,20 @@ class Evaluation extends BaseResponse {
 }
 
 class EvaluationResult extends BaseResponse {
-  num mark;
+  num? mark;
+  String? nonEvaluationReason;
   EvaluationResult({
-    required this.mark,
+    this.mark,
     required super.type,
     required super.id,
+    this.nonEvaluationReason,
   });
   static EvaluationResult fromJson(Map<String, dynamic> json) {
     return EvaluationResult(
       id: json['id'],
       type: json['type'],
       mark: json['mark'],
+      nonEvaluationReason: json['nonEvaluationReason'],
     );
   }
 }

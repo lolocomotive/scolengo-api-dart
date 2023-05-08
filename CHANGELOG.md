@@ -1,3 +1,7 @@
+## 0.0.9
+
+Add nonEvaluationReason in evaluation
+
 ## 0.0.8
 
 Fix parsing/typing of school infos
