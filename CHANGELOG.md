@@ -1,7 +1,3 @@
-## 0.0.10
-
-Ignore CacheProvider completely for non GET requets
-
 ## 0.0.9
 
 Add nonEvaluationReason in evaluation
