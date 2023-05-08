@@ -106,61 +106,51 @@ class Skolengo {
 
     Response response;
     String responseBody;
-    final shouldCache =
-        await cacheProvider?.shouldUseCache(uri.toString()) ?? false;
-    if (shouldCache) {
-      if (method != 'GET') throw Exception('Only GET requests can be cached');
-      responseBody = await cacheProvider!.get(uri.toString());
-    } else {
-      switch (method) {
-        case 'GET':
-          response = await get(uri, headers: headers);
-          // Only cache GET requests, it doesn't make sense to cache other requests
-          if (cacheProvider?.raw() ?? false) {
-            cacheProvider?.set(uri.toString(), response.body);
-          }
-          break;
-        case 'POST':
-          response = await post(uri, headers: headers, body: body);
-          break;
-        case 'DELETE':
-          response = await delete(uri, headers: headers, body: body);
-          break;
-        case 'PUT':
-          response = await put(uri, headers: headers, body: body);
-          break;
-        case 'PATCH':
-          response = await patch(uri, headers: headers, body: body);
-          break;
-        default:
-          throw UnimplementedError('Method $method not implemented');
-      }
-      responseBody = response.body;
-      if (response.statusCode == 401) {
-        //Refresh token
-        await credentials?.getTokenResponse(true);
-        return _invokeApi(path, method,
-            headers: headers,
-            params: params,
-            body: body,
-            numTries: numTries + 1);
-      }
-
-      if (response.statusCode == 503) {
-        //Retry in 500ms, this happens when Pronote resources are not ready.
-        await Future.delayed(Duration(milliseconds: 500));
-        return _invokeApi(path, method,
-            headers: headers,
-            params: params,
-            body: body,
-            numTries: numTries + 1);
-      }
-
-      if (response.statusCode >= 400) {
-        throw Exception('Error ${response.statusCode} ${response.body}');
-      }
-      if (response.statusCode == 204) return {};
+    bool shouldCache = false;
+    switch (method) {
+      case 'GET':
+        shouldCache =
+            await cacheProvider?.shouldUseCache(uri.toString()) ?? false;
+        response = await get(uri, headers: headers);
+        // Only cache GET requests, it doesn't make sense to cache other requests
+        if (cacheProvider?.raw() ?? false) {
+          cacheProvider?.set(uri.toString(), response.body);
+        }
+        break;
+      case 'POST':
+        response = await post(uri, headers: headers, body: body);
+        break;
+      case 'DELETE':
+        response = await delete(uri, headers: headers, body: body);
+        break;
+      case 'PUT':
+        response = await put(uri, headers: headers, body: body);
+        break;
+      case 'PATCH':
+        response = await patch(uri, headers: headers, body: body);
+        break;
+      default:
+        throw UnimplementedError('Method $method not implemented');
     }
+    responseBody = response.body;
+    if (response.statusCode == 401) {
+      //Refresh token
+      await credentials?.getTokenResponse(true);
+      return _invokeApi(path, method,
+          headers: headers, params: params, body: body, numTries: numTries + 1);
+    }
+
+    if (response.statusCode == 503) {
+      //Retry in 500ms, this happens when Pronote resources are not ready.
+      await Future.delayed(Duration(milliseconds: 500));
+      return _invokeApi(path, method,
+          headers: headers, params: params, body: body, numTries: numTries + 1);
+    }
+
+    if (response.statusCode >= 400) {
+      throw Exception('Error ${response.statusCode} ${response.body}');
+    }
+    if (response.statusCode == 204) return {};
 
     if (debug) {
       print('\tResponse size: ${(responseBody.length / 100).round() / 10}kb');
