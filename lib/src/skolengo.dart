@@ -108,8 +108,7 @@ class Skolengo {
     String responseBody;
     final shouldCache =
         await cacheProvider?.shouldUseCache(uri.toString()) ?? false;
-    if (shouldCache) {
-      if (method != 'GET') throw Exception('Only GET requests can be cached');
+    if (shouldCache && method != 'GET') {
       responseBody = await cacheProvider!.get(uri.toString());
     } else {
       switch (method) {

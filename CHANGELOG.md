@@ -1,3 +1,7 @@
+## 0.0.11
+
+Remove error when trying to cache non get requests
+
 ## 0.0.9
 
 Add nonEvaluationReason in evaluation
