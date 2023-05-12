@@ -75,14 +75,14 @@ class Skolengo {
     this.debug = false,
   });
 
-  Future<Map<String, dynamic>> _invokeApi(
+  Stream<Map<String, dynamic>> _invokeApi(
     String path,
     String method, {
     Map<String, String>? headers,
     Map<String, String>? params,
     Object? body,
     int numTries = 0,
-  }) async {
+  }) async* {
     final stopwatch = Stopwatch()..start();
     if (numTries > 3) {
       throw Exception('Too many tries');
@@ -105,19 +105,36 @@ class Skolengo {
     }
 
     Response response;
-    String responseBody;
+    String? responseBody;
+
     final shouldCache = method == 'GET' &&
-        (await cacheProvider?.shouldUseCache(uri.toString()) ?? false);
+        (await cacheProvider?.useCache(uri.toString()) ?? false);
+    final shouldNetwork = method != 'GET' ||
+        await cacheProvider?.useNetwork(uri.toString()) == true;
+
     if (shouldCache) {
       responseBody = await cacheProvider!.get(uri.toString());
-    } else {
+      if (!cacheProvider!.raw()) {
+        yield jsonDecode(responseBody) as Map<String, dynamic>;
+      } else {
+        yield Japx.decode(jsonDecode(responseBody));
+      }
+    }
+    if (shouldNetwork) {
       switch (method) {
         case 'GET':
           response = await get(uri, headers: headers);
+
           // Only cache GET requests, it doesn't make sense to cache other requests
-          if (cacheProvider?.raw() ?? false) {
-            cacheProvider?.set(uri.toString(), response.body);
+          if (cacheProvider != null) {
+            if (cacheProvider!.raw()) {
+              cacheProvider?.set(uri.toString(), response.body);
+            } else {
+              cacheProvider?.set(uri.toString(),
+                  jsonEncode(Japx.decode(jsonDecode(response.body))));
+            }
           }
+          if (cacheProvider?.raw() ?? false) {}
           break;
         case 'POST':
           response = await post(uri, headers: headers, body: body);
@@ -134,11 +151,12 @@ class Skolengo {
         default:
           throw UnimplementedError('Method $method not implemented');
       }
+
       responseBody = response.body;
       if (response.statusCode == 401) {
         //Refresh token
         await credentials?.getTokenResponse(true);
-        return _invokeApi(path, method,
+        yield* _invokeApi(path, method,
             headers: headers,
             params: params,
             body: body,
@@ -148,7 +166,7 @@ class Skolengo {
       if (response.statusCode == 503) {
         //Retry in 500ms, this happens when Pronote resources are not ready.
         await Future.delayed(Duration(milliseconds: 500));
-        return _invokeApi(path, method,
+        yield* _invokeApi(path, method,
             headers: headers,
             params: params,
             body: body,
@@ -158,166 +176,163 @@ class Skolengo {
       if (response.statusCode >= 400) {
         throw Exception('Error ${response.statusCode} ${response.body}');
       }
-      if (response.statusCode == 204) return {};
+      if (response.statusCode == 204) yield {};
+      yield Japx.decode(jsonDecode(responseBody));
     }
-
-    if (debug) {
-      print('\tResponse size: ${(responseBody.length / 100).round() / 10}kb');
-      print(
-          '\t${shouldCache ? 'Cache r' : 'R'}equest done in ${stopwatch.elapsedMilliseconds}ms');
-      stopwatch.reset();
+    if (!shouldCache && !shouldNetwork) {
+      throw Exception(
+          'Illegal state: shouldCache and shouldNetwork are both false');
     }
-
-    final json = jsonDecode(responseBody);
-    if (debug) {
-      print('\tParsing done in ${stopwatch.elapsedMilliseconds}ms');
-      stopwatch.reset();
-    }
-    if (shouldCache && !cacheProvider!.raw()) return json;
-
-    final decoded = Japx.decode(json);
-    if (debug) {
-      print('\tJapx done in ${stopwatch.elapsedMilliseconds}ms');
-      stopwatch.reset();
-      final reencoded = jsonEncode(decoded);
-      print(
-          '\tSize after japx: ${(reencoded.length / 100).round() / 10}kb (${stopwatch.elapsedMilliseconds}ms to reencode)');
-    }
-    if (!(cacheProvider?.raw() ?? true)) {
-      cacheProvider?.set(uri.toString(), jsonEncode(decoded));
-    }
-    return decoded;
   }
 
-  Future<SkolengoResponse<CurrentConfig>> getAppCurrentConfig() async {
-    final results = await _invokeApi('/sko-app-configs/current', 'GET');
-    return SkolengoResponse(
-      data: CurrentConfig.fromJson(results['data']),
-      raw: results,
-    );
+  Stream<SkolengoResponse<CurrentConfig>> getAppCurrentConfig() async* {
+    final results = _invokeApi('/sko-app-configs/current', 'GET');
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: CurrentConfig.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<School>>> searchSchool(String text,
-      {int limit = 10, int offset = 0}) async {
-    final results = await _invokeApi('/schools', 'GET', params: {
+  Stream<SkolengoResponse<List<School>>> searchSchool(String text,
+      {int limit = 10, int offset = 0}) async* {
+    final results = _invokeApi('/schools', 'GET', params: {
       'page[offset]': offset.toString(),
       'page[limit]': limit.toString(),
       'filter[text]': text,
     });
-    return SkolengoResponse(
-      data: results['data'].map<School>((e) => School.fromJson(e)).toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data'].map<School>((e) => School.fromJson(e)).toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<School>>> searchSchoolGPS(num lat, num lon,
-      {int limit = 10, int offset = 10}) async {
-    final results = await _invokeApi('/schools', 'GET', params: {
+  Stream<SkolengoResponse<List<School>>> searchSchoolGPS(num lat, num lon,
+      {int limit = 10, int offset = 10}) async* {
+    final results = _invokeApi('/schools', 'GET', params: {
       'page[offset]': offset.toString(),
       'page[limit]': limit.toString(),
       'filter[lat]': lat.toString(),
       'filter[lon]': lon.toString(),
     });
-    return SkolengoResponse(
-      data: results['data'].map<School>((e) => School.fromJson(e)).toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data'].map<School>((e) => School.fromJson(e)).toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<User>> getUserInfo(String userId) async {
-    final results = await _invokeApi('/users-info/$userId', 'GET',
+  Stream<SkolengoResponse<User>> getUserInfo(String userId) async* {
+    final results = _invokeApi('/users-info/$userId', 'GET',
         params: {'include': 'school,students,students.school'});
-    return SkolengoResponse(
-      data: User.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: User.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<SchoolInfo>>> getSchoolInfos() async {
-    final results = await _invokeApi('/schools-info', 'GET', params: {
+  Stream<SkolengoResponse<List<SchoolInfo>>> getSchoolInfos() async* {
+    final results = _invokeApi('/schools-info', 'GET', params: {
       'include':
           'illustration,school,author,author.person,author.technicalUser,attachments'
     });
-    return SkolengoResponse(
-      data: results['data']
-          .map<SchoolInfo>((e) => SchoolInfo.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<SchoolInfo>((e) => SchoolInfo.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<SchoolInfo>> getSchoolInfo(String infoID) async {
-    final results = await _invokeApi('/schools-info/$infoID', 'GET', params: {
+  Stream<SkolengoResponse<SchoolInfo>> getSchoolInfo(String infoID) async* {
+    final results = _invokeApi('/schools-info/$infoID', 'GET', params: {
       'include':
           'illustration,school,author,author.person,author.technicalUser,attachments'
     });
-    return SkolengoResponse(
-      data: SchoolInfo.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: SchoolInfo.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<EvaluationSettings>> getEvaluationSettings(
-      String studentId) async {
-    final results = await _invokeApi('/evaluations-settings', 'GET', params: {
+  Stream<SkolengoResponse<EvaluationSettings>> getEvaluationSettings(
+      String studentId) async* {
+    final results = _invokeApi('/evaluations-settings', 'GET', params: {
       'filter[student.id]': studentId,
       'include': 'periods,skillsSetting,skillsSetting.skillAcquisitionColors',
     });
-    return SkolengoResponse(
-      data: EvaluationSettings.fromJson(results['data'][0]),
-      raw: results,
-    ); //TODO check if there can be multiple
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: EvaluationSettings.fromJson(result['data'][0]),
+        raw: result,
+      ); //TODO check if there can be multiple
+    }
   }
 
-  Future<SkolengoResponse<List<EvaluationService>>> getEvaluationServices(
-      String studentId, String periodID) async {
-    final results = await _invokeApi('/evaluation-services', 'GET', params: {
+  Stream<SkolengoResponse<List<EvaluationService>>> getEvaluationServices(
+      String studentId, String periodID) async* {
+    final results = _invokeApi('/evaluation-services', 'GET', params: {
       'filter[student.id]': studentId,
       'filter[period.id]': periodID,
       'include':
           'subject,evaluations,evaluations.evaluationResult,evaluations.evaluationResult.subSkillsEvaluationResults,evaluations.evaluationResult.subSkillsEvaluationResults.subSkill,evaluations.subSkills,teachers'
     });
-    return SkolengoResponse(
-      data: results['data']
-          .map<EvaluationService>((e) => EvaluationService.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<EvaluationService>((e) => EvaluationService.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
 //FIXME test this
-  Future<SkolengoResponse<Evaluation?>> getEvaluation(
-      String studentId, String evaluationId) async {
-    final results =
-        await _invokeApi('/evaluations/$evaluationId', 'GET', params: {
+  Stream<SkolengoResponse<Evaluation?>> getEvaluation(
+      String studentId, String evaluationId) async* {
+    final results = _invokeApi('/evaluations/$evaluationId', 'GET', params: {
       'filter[student.id]': studentId,
       'include':
           'evaluationService,evaluationService.subject,evaluationService.teachers,subSubject,subSkills,evaluationResult,evaluationResult.subSkillsEvaluationResults,evaluationResult.subSkillsEvaluationResults.subSkill'
     });
-    return SkolengoResponse(
-      data: null,
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: null,
+        raw: result,
+      );
+    }
   }
 
   //TODO test this
-  Future<SkolengoResponse<List<PeriodicReportsFile>>> getPeriodicReportsFiles(
-      String studentId) async {
-    final results = await _invokeApi('/periodic-reports-files', 'GET',
+  Stream<SkolengoResponse<List<PeriodicReportsFile>>> getPeriodicReportsFiles(
+      String studentId) async* {
+    final results = _invokeApi('/periodic-reports-files', 'GET',
         params: {'filter[student.id]': studentId, 'include': 'period'});
-    return SkolengoResponse(
-      data: results['data']
-          .map<PeriodicReportsFile>((e) => PeriodicReportsFile.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<PeriodicReportsFile>((e) => PeriodicReportsFile.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<Agenda>>> getAgendas(String studentId,
+  Stream<SkolengoResponse<List<Agenda>>> getAgendas(String studentId,
       {String? start,
       String? end,
       DateTime? startDate,
-      DateTime? endDate}) async {
+      DateTime? endDate}) async* {
     start ??= startDate?.toIso8601String().substring(0, 10);
     end ??= endDate?.toIso8601String().substring(0, 10);
 
@@ -326,67 +341,75 @@ class Skolengo {
           'Start and end (or startDate and endDate) must be set');
     }
 
-    final results = await _invokeApi('/agendas', 'GET', params: {
+    final results = _invokeApi('/agendas', 'GET', params: {
       'filter[student.id]': studentId,
       'filter[date][GE]': start,
       'filter[date][LE]': end,
       'include':
           'lessons,lessons.subject,lessons.teachers,homeworkAssignments,homeworkAssignments.subject',
     });
-    return SkolengoResponse(
-      data: results['data'].map<Agenda>((e) => Agenda.fromJson(e)).toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data'].map<Agenda>((e) => Agenda.fromJson(e)).toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<Lesson>> getLesson(
-      String studentId, String lessonId) async {
-    final results = await _invokeApi('/lessons/$lessonId', 'GET', params: {
+  Stream<SkolengoResponse<Lesson>> getLesson(
+      String studentId, String lessonId) async* {
+    final results = _invokeApi('/lessons/$lessonId', 'GET', params: {
       'filter[student.id]': studentId,
       'include':
           'teachers,contents,contents.attachments,subject,toDoForTheLesson,toDoForTheLesson.subject,toDoAfterTheLesson,toDoAfterTheLesson.subject',
     });
-    return SkolengoResponse(
-      data: Lesson.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: Lesson.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<HomeworkAssignment>>> getHomeworkAssignments(
-      String studentId, String startDate, String endDate) async {
-    final results = await _invokeApi('/homework-assignments', 'GET', params: {
+  Stream<SkolengoResponse<List<HomeworkAssignment>>> getHomeworkAssignments(
+      String studentId, String startDate, String endDate) async* {
+    final results = _invokeApi('/homework-assignments', 'GET', params: {
       'filter[student.id]': studentId,
       'filter[dueDate][GE]': startDate,
       'filter[dueDate][LE]': endDate,
       'include': 'subject,teacher,attachments,teacher.person',
     });
-    return SkolengoResponse(
-      data: results['data']
-          .map<HomeworkAssignment>((e) => HomeworkAssignment.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<HomeworkAssignment>((e) => HomeworkAssignment.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<HomeworkAssignment>> getHomeworkAssignment(
-      String studentId, String homeworkAssignmentId) async {
-    final results = await _invokeApi(
+  Stream<SkolengoResponse<HomeworkAssignment>> getHomeworkAssignment(
+      String studentId, String homeworkAssignmentId) async* {
+    final results = _invokeApi(
         '/homework-assignments/$homeworkAssignmentId', 'GET',
         params: {
           'filter[student.id]': studentId,
           'include':
               'subject,teacher,pedagogicContent,individualCorrectedWork,individualCorrectedWork.attachments,individualCorrectedWork.audio,commonCorrectedWork,commonCorrectedWork.attachments,commonCorrectedWork.audio,commonCorrectedWork.pedagogicContent,attachments,audio,teacher.person',
         });
-    return SkolengoResponse(
-      data: HomeworkAssignment.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: HomeworkAssignment.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<HomeworkAssignment>> patchHomeworkAssignment(
-      String studentId, String homeworkAssignmentId, bool done) async {
+  Stream<SkolengoResponse<HomeworkAssignment>> patchHomeworkAssignment(
+      String studentId, String homeworkAssignmentId, bool done) async* {
     final results =
-        await _invokeApi('/homework-assignments/$homeworkAssignmentId', 'PATCH',
+        _invokeApi('/homework-assignments/$homeworkAssignmentId', 'PATCH',
             body: jsonEncode({
               'data': {
                 'type': 'homework',
@@ -401,73 +424,82 @@ class Skolengo {
           'include':
               'subject,teacher,pedagogicContent,individualCorrectedWork,individualCorrectedWork.attachments,individualCorrectedWork.audio,commonCorrectedWork,commonCorrectedWork.attachments,commonCorrectedWork.audio,commonCorrectedWork.pedagogicContent,attachments,audio,teacher.person',
         });
-    return SkolengoResponse(
-      data: HomeworkAssignment.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: HomeworkAssignment.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<UsersMailSettings>> getUsersMailSettings(
-      String userId) async {
-    final results =
-        await _invokeApi('/users-mail-settings/$userId', 'GET', params: {
+  Stream<SkolengoResponse<UsersMailSettings>> getUsersMailSettings(
+      String userId) async* {
+    final results = _invokeApi('/users-mail-settings/$userId', 'GET', params: {
       'include':
           'signature,folders,folders.parent,contacts,contacts.person,contacts.personContacts'
     });
-    return SkolengoResponse(
-      data: UsersMailSettings.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: UsersMailSettings.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<Communication>>> getCommunicationsFromFolder(
+  Stream<SkolengoResponse<List<Communication>>> getCommunicationsFromFolder(
       String folderId,
       {int limit = 10,
-      int offset = 0}) async {
-    final results = await _invokeApi('/communications', 'GET', params: {
+      int offset = 0}) async* {
+    final results = _invokeApi('/communications', 'GET', params: {
       'filter[folders.id]': folderId,
       'page[limit]': limit.toString(),
       'page[offset]': offset.toString(),
       'include':
           'lastParticipation,lastParticipation.sender,lastParticipation.sender.person,lastParticipation.sender.technicalUser',
     });
-    return SkolengoResponse(
-      data: results['data']
-          .map<Communication>((e) => Communication.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<Communication>((e) => Communication.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<Participation>>> getCommunicationParticipations(
-      String communicationId) async {
-    final results = await _invokeApi(
+  Stream<SkolengoResponse<List<Participation>>> getCommunicationParticipations(
+      String communicationId) async* {
+    final results = _invokeApi(
         '/communications/$communicationId/participations', 'GET', params: {
       'include': 'sender,sender.person,sender.technicalUser,attachments'
     });
-    return SkolengoResponse(
-      data: results['data']
-          .map<Participation>((e) => Participation.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<Participation>((e) => Participation.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
-  Future<SkolengoResponse<List<Participant>>> getCommunicationParticipants(
+  Stream<SkolengoResponse<List<Participant>>> getCommunicationParticipants(
       String communicationId,
-      {fromGroup = true}) async {
-    final results = await _invokeApi(
+      {fromGroup = true}) async* {
+    final results = _invokeApi(
         '/communications/$communicationId/participants', 'GET',
         params: {
           'include': 'person,technicalUser',
           'filter[fromGroup]': fromGroup.toString(),
         });
-    return SkolengoResponse(
-      data: results['data']
-          .map<Participant>((e) => Participant.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<Participant>((e) => Participant.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
   Future<SkolengoResponse<void>> patchCommunicationFolders(
@@ -483,7 +515,7 @@ class Skolengo {
         }),
         params: {
           'filter[user.id]': userId,
-        });
+        }).first;
     return SkolengoResponse(
       data: null,
       raw: results,
@@ -503,7 +535,7 @@ class Skolengo {
             'ccRecipients': ccRecipients.map((e) => e.toMap()).toList(),
           if (bccRecipients != null)
             'bccRecipients': bccRecipients.map((e) => e.toMap()).toList(),
-        })));
+        }))).first;
     return SkolengoResponse(
       data: Communication.fromJson(results['data']),
       raw: results,
@@ -527,50 +559,55 @@ class Skolengo {
           },
         ),
       ),
-    );
+    ).first;
     return SkolengoResponse(
       data: Participation.fromJson(results['data']),
       raw: results,
     );
   }
 
-  Future<SkolengoResponse<List<AbsenceFile>>> getAbsenceFiles(
-      String studentId) async {
-    final results = await _invokeApi('/absence-files', 'GET', params: {
+  Stream<SkolengoResponse<List<AbsenceFile>>> getAbsenceFiles(
+      String studentId) async* {
+    final results = _invokeApi('/absence-files', 'GET', params: {
       'filter[student.id]': studentId,
       'include':
           'currentState,currentState.absenceReason,currentState.absenceRecurrence'
     });
-    return SkolengoResponse(
-      data: results['data']
-          .map<AbsenceFile>((e) => AbsenceFile.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<AbsenceFile>((e) => AbsenceFile.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
   //TODO test this
-  Future<SkolengoResponse<AbsenceFile>> getAbsenceFile(String folderId) async {
-    final results =
-        await _invokeApi('/absence-files/$folderId', 'GET', params: {
+  Stream<SkolengoResponse<AbsenceFile>> getAbsenceFile(String folderId) async* {
+    final results = _invokeApi('/absence-files/$folderId', 'GET', params: {
       'include':
           'currentState,currentState.absenceReason,currentState.absenceRecurrence,history,history.creator'
     });
-    return SkolengoResponse(
-      data: AbsenceFile.fromJson(results['data']),
-      raw: results,
-    );
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: AbsenceFile.fromJson(result['data']),
+        raw: result,
+      );
+    }
   }
 
   //TODO test this
-  Future<SkolengoResponse<List<AbsenceReason>>> getAbsenceReasons() async {
-    final results = await _invokeApi('/absence-reasons', 'GET');
-    return SkolengoResponse(
-      data: results['data']
-          .map<AbsenceReason>((e) => AbsenceReason.fromJson(e))
-          .toList(),
-      raw: results,
-    );
+  Stream<SkolengoResponse<List<AbsenceReason>>> getAbsenceReasons() async* {
+    final results = _invokeApi('/absence-reasons', 'GET');
+    await for (final result in results) {
+      yield SkolengoResponse(
+        data: result['data']
+            .map<AbsenceReason>((e) => AbsenceReason.fromJson(e))
+            .toList(),
+        raw: result,
+      );
+    }
   }
 
   Future<Client> getOIDClient(School school) async {
