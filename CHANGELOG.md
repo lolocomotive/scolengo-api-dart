@@ -1,3 +1,7 @@
+## 0.0.15
+
+Add technicalUser
+
 ## 0.0.13
 
 Remove error when trying to cache non get requests

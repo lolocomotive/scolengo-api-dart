@@ -7,6 +7,7 @@ class Participant extends BaseResponse {
   String? label;
   bool fromGroup;
   User? person;
+  TechnicalUser? technicalUser;
   Participant({
     required this.category,
     required this.additionalInfo,
@@ -15,6 +16,7 @@ class Participant extends BaseResponse {
     required super.id,
     this.person,
     required super.type,
+    this.technicalUser,
   });
 
   static Participant fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,29 @@ class Participant extends BaseResponse {
       label: json['label'],
       fromGroup: json['fromGroup'],
       person: json['person'] == null ? null : User.fromJson(json['person']),
+      technicalUser: json['technicalUser'] == null
+          ? null
+          : TechnicalUser.fromJson(json['technicalUser']),
+    );
+  }
+}
+
+class TechnicalUser extends BaseResponse {
+  String label;
+  String? logoUrl;
+  TechnicalUser({
+    required this.label,
+    this.logoUrl,
+    required super.type,
+    required super.id,
+  });
+
+  static TechnicalUser fromJson(Map<String, dynamic> json) {
+    return TechnicalUser(
+      id: json['id'],
+      type: json['type'],
+      label: json['label'],
+      logoUrl: json['logoUrl'],
     );
   }
 }
