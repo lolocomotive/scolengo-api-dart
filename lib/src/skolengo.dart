@@ -110,7 +110,7 @@ class Skolengo {
     final shouldCache = method == 'GET' &&
         (await cacheProvider?.useCache(uri.toString()) ?? false);
     final shouldNetwork = method != 'GET' ||
-        await cacheProvider?.useNetwork(uri.toString()) == true;
+        (await cacheProvider?.useNetwork(uri.toString()) ?? true);
 
     if (shouldCache) {
       responseBody = await cacheProvider!.get(uri.toString());
