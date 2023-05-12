@@ -83,7 +83,6 @@ class Skolengo {
     Object? body,
     int numTries = 0,
   }) async* {
-    final stopwatch = Stopwatch()..start();
     if (numTries > 3) {
       throw Exception('Too many tries');
     }
