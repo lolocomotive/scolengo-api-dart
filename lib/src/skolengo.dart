@@ -406,10 +406,10 @@ class Skolengo {
     }
   }
 
-  Stream<SkolengoResponse<HomeworkAssignment>> patchHomeworkAssignment(
-      String studentId, String homeworkAssignmentId, bool done) async* {
+  Future<SkolengoResponse<HomeworkAssignment>> patchHomeworkAssignment(
+      String studentId, String homeworkAssignmentId, bool done) async {
     final results =
-        _invokeApi('/homework-assignments/$homeworkAssignmentId', 'PATCH',
+        await _invokeApi('/homework-assignments/$homeworkAssignmentId', 'PATCH',
             body: jsonEncode({
               'data': {
                 'type': 'homework',
@@ -423,13 +423,12 @@ class Skolengo {
           'filter[student.id]': studentId,
           'include':
               'subject,teacher,pedagogicContent,individualCorrectedWork,individualCorrectedWork.attachments,individualCorrectedWork.audio,commonCorrectedWork,commonCorrectedWork.attachments,commonCorrectedWork.audio,commonCorrectedWork.pedagogicContent,attachments,audio,teacher.person',
-        });
-    await for (final result in results) {
-      yield SkolengoResponse(
-        data: HomeworkAssignment.fromJson(result['data']),
-        raw: result,
-      );
-    }
+        }).first;
+
+    return SkolengoResponse(
+      data: HomeworkAssignment.fromJson(results['data']),
+      raw: results,
+    );
   }
 
   Stream<SkolengoResponse<UsersMailSettings>> getUsersMailSettings(
