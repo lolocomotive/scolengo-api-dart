@@ -161,9 +161,7 @@ class Skolengo {
             params: params,
             body: body,
             numTries: numTries + 1);
-      }
-
-      if (response.statusCode == 503) {
+      } else if (response.statusCode == 503) {
         //Retry in 500ms, this happens when Pronote resources are not ready.
         await Future.delayed(Duration(milliseconds: 500));
         yield* _invokeApi(path, method,
@@ -171,13 +169,13 @@ class Skolengo {
             params: params,
             body: body,
             numTries: numTries + 1);
-      }
-
-      if (response.statusCode >= 400) {
+      } else if (response.statusCode >= 400) {
         throw Exception('Error ${response.statusCode} ${response.body}');
+      } else if (response.statusCode == 204) {
+        yield {};
+      } else {
+        yield Japx.decode(jsonDecode(responseBody));
       }
-      if (response.statusCode == 204) yield {};
-      yield Japx.decode(jsonDecode(responseBody));
     }
     if (!shouldCache && !shouldNetwork) {
       throw Exception(
