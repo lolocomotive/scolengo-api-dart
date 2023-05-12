@@ -124,17 +124,6 @@ class Skolengo {
       switch (method) {
         case 'GET':
           response = await get(uri, headers: headers);
-
-          // Only cache GET requests, it doesn't make sense to cache other requests
-          if (cacheProvider != null) {
-            if (cacheProvider!.raw()) {
-              cacheProvider?.set(uri.toString(), response.body);
-            } else {
-              cacheProvider?.set(uri.toString(),
-                  jsonEncode(Japx.decode(jsonDecode(response.body))));
-            }
-          }
-          if (cacheProvider?.raw() ?? false) {}
           break;
         case 'POST':
           response = await post(uri, headers: headers, body: body);
@@ -175,6 +164,17 @@ class Skolengo {
         yield {};
       } else {
         yield Japx.decode(jsonDecode(responseBody));
+        if (method == 'GET') {
+          // Only cache GET requests, it doesn't make sense to cache other requests
+          if (cacheProvider != null) {
+            if (cacheProvider!.raw()) {
+              cacheProvider?.set(uri.toString(), response.body);
+            } else {
+              cacheProvider?.set(uri.toString(),
+                  jsonEncode(Japx.decode(jsonDecode(response.body))));
+            }
+          }
+        }
       }
     }
     if (!shouldCache && !shouldNetwork) {
