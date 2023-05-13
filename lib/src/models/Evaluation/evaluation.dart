@@ -1,6 +1,21 @@
 import 'package:scolengo_api/scolengo_api.dart';
 
-class EvaluationService extends BaseResponse {
+abstract class EvaluationResponse extends BaseResponse {
+  EvaluationResponse({required super.type, required super.id});
+
+  static EvaluationResponse fromJson(Map<String, dynamic> json) {
+    switch (json['type']) {
+      case 'evaluationService':
+        return EvaluationService.fromJson(json);
+      case 'evaluation':
+        return Evaluation.fromJson(json, Subject.fromJson(json['subject']));
+      default:
+        throw Exception('Unknown type ${json['type']}');
+    }
+  }
+}
+
+class EvaluationService extends EvaluationResponse {
   List<Evaluation> evaluations;
   Subject subject;
   EvaluationService({
@@ -16,35 +31,42 @@ class EvaluationService extends BaseResponse {
       id: json['id'],
       type: json['type'],
       evaluations: json['evaluations']
-          ?.map<Evaluation>((e) => Evaluation.fromJson(e, subject))
-          ?.toList() ?? [],
+              ?.map<Evaluation>((e) => Evaluation.fromJson(e, subject))
+              ?.toList() ??
+          [],
       subject: subject,
     );
   }
 }
 
-class Evaluation extends BaseResponse {
+class Evaluation extends EvaluationResponse {
   num? coefficient;
   num? average;
   num? scale;
   num? studentAverage;
-  EvaluationResult result;
+  num? min;
+  num? max;
   Subject subject;
   String date;
-  /* 
-  I can't test those:
-    dynamic subSkills;
-    dynamic subSkillsEvaluationResults;
-    dynamic subSkill;
-  */
+  String? topic;
+  String? dateTime;
+  String? title;
+  EvaluationResult result;
+  EvaluationService? evaluationService;
+
   Evaluation({
     required this.coefficient,
     required this.average,
     required this.scale,
     required this.studentAverage,
-    required this.subject,
+    this.min,
+    this.max,
     required this.result,
+    required this.subject,
     required this.date,
+    this.topic,
+    this.dateTime,
+    this.title,
     required super.type,
     required super.id,
   });
@@ -66,6 +88,8 @@ class Evaluation extends BaseResponse {
 class EvaluationResult extends BaseResponse {
   num? mark;
   String? nonEvaluationReason;
+  String? comment;
+  List<SubSkillEvaluationResult>? subSkillsEvaluationResults;
   EvaluationResult({
     this.mark,
     required super.type,
@@ -78,6 +102,42 @@ class EvaluationResult extends BaseResponse {
       type: json['type'],
       mark: json['mark'],
       nonEvaluationReason: json['nonEvaluationReason'],
+    );
+  }
+}
+
+class SubSkillEvaluationResult extends BaseResponse {
+  String level;
+  SubSkill subskill;
+
+  SubSkillEvaluationResult({
+    required this.level,
+    required this.subskill,
+    required super.type,
+    required super.id,
+  });
+  static SubSkillEvaluationResult fromJson(Map<String, dynamic> json) {
+    return SubSkillEvaluationResult(
+      id: json['id'],
+      type: json['type'],
+      level: json['level'],
+      subskill: SubSkill.fromJson(json['subSkill']),
+    );
+  }
+}
+
+class SubSkill extends BaseResponse {
+  String shortLabel;
+  SubSkill({
+    required this.shortLabel,
+    required super.type,
+    required super.id,
+  });
+  static SubSkill fromJson(Map<String, dynamic> json) {
+    return SubSkill(
+      id: json['id'],
+      type: json['type'],
+      shortLabel: json['shortLabel'],
     );
   }
 }

@@ -276,7 +276,7 @@ class Skolengo {
     }
   }
 
-  Stream<SkolengoResponse<List<EvaluationService>>> getEvaluationServices(
+  Stream<SkolengoResponse<List<EvaluationResponse>>> getEvaluationServices(
       String studentId, String periodID) async* {
     final results = _invokeApi('/evaluation-services', 'GET', params: {
       'filter[student.id]': studentId,
@@ -287,7 +287,7 @@ class Skolengo {
     await for (final result in results) {
       yield SkolengoResponse(
         data: result['data']
-            .map<EvaluationService>((e) => EvaluationService.fromJson(e))
+            .map<EvaluationResponse>((e) => EvaluationResponse.fromJson(e))
             .toList(),
         raw: result,
       );
