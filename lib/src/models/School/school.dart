@@ -12,6 +12,8 @@ class School extends BaseResponse {
   String? emsCode;
   String? emsOIDCWellKnownUrl;
   num? distance;
+  String? timeZone;
+  List<String>? subscribedServices;
 
   School({
     required this.name,
@@ -25,6 +27,8 @@ class School extends BaseResponse {
     this.emsCode,
     this.emsOIDCWellKnownUrl,
     this.distance,
+    this.timeZone,
+    this.subscribedServices,
     required super.id,
     required super.type,
   });
@@ -44,6 +48,8 @@ class School extends BaseResponse {
       emsCode: json['emsCode'],
       emsOIDCWellKnownUrl: json['emsOIDCWellKnownUrl'],
       distance: json['distance'],
+      timeZone: json['timeZone'],
+      subscribedServices: json['subscribedServices'] as List<String>?,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:scolengo_api/src/models/School/school.dart';
 import 'package:scolengo_api/src/models/globals.dart';
 
 class UserPermission {
@@ -41,6 +42,8 @@ class User extends BaseResponse {
   String? postalCode;
   String? city;
   String? country;
+  List<User>? students;
+  School? school;
 
   User({
     required super.id,
@@ -64,6 +67,8 @@ class User extends BaseResponse {
     this.postalCode,
     this.city,
     this.country,
+    this.students,
+    this.school,
   });
 
   static User fromJson(Map<String, dynamic> json) {
@@ -93,6 +98,8 @@ class User extends BaseResponse {
       postalCode: json['postalCode'],
       city: json['city'],
       country: json['country'],
+      students: json['students']?.map<User>((e) => User.fromJson(e)).toList(),
+      school: json['school'] != null ? School.fromJson(json['school']) : null,
     );
   }
 }
