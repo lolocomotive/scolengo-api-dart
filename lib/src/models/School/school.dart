@@ -49,7 +49,7 @@ class School extends BaseResponse {
       emsOIDCWellKnownUrl: json['emsOIDCWellKnownUrl'],
       distance: json['distance'],
       timeZone: json['timeZone'],
-      subscribedServices: json['subscribedServices'] as List<String>?,
+      subscribedServices: json['subscribedServices']?.cast<String>(),
     );
   }
 

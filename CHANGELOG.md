@@ -1,3 +1,7 @@
+## 1.1.1
+
+Fix casting error
+
 ## 1.1.0
 
 Fix evaluations and add some missing fields

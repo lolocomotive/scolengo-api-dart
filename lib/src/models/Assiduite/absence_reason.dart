@@ -19,7 +19,7 @@ class AbsenceReason extends BaseResponse {
       type: json['type'],
       code: json['code'],
       longLabel: json['longLabel'],
-      supportedAbsenceTypes: json['supportedAbsenceTypes'] as List<String>,
+      supportedAbsenceTypes: json['supportedAbsenceTypes'].cast<String>(),
     );
   }
 }
