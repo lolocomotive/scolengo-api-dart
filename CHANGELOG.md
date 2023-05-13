@@ -1,3 +1,7 @@
+## 1.1.0
+
+Fix evaluations and add some missing fields
+
 ## 1.0.0
 
 Use Streams instead of futures for GET requests. This allows the cached result to be returned immediately and the new result to be returned when it's ready.
