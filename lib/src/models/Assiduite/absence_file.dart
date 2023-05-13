@@ -1,5 +1,4 @@
-import 'package:scolengo_api/src/models/Assiduite/absence_reason.dart';
-import 'package:scolengo_api/src/models/globals.dart';
+import 'package:scolengo_api/scolengo_api.dart';
 
 class AbsenceFile extends BaseResponse {
   AbsenceFileState currentState;
@@ -21,6 +20,8 @@ class AbsenceFileState extends BaseResponse {
   String absenceEndDateTime;
   String absenceType;
   String absenceFileStatus;
+  String comment;
+  User? creator;
   AbsenceReason absenceReason;
 
   AbsenceFileState({
@@ -29,9 +30,11 @@ class AbsenceFileState extends BaseResponse {
     required this.absenceEndDateTime,
     required this.absenceType,
     required this.absenceFileStatus,
+    required this.comment,
+    this.creator,
     required this.absenceReason,
-    required super.id,
     required super.type,
+    required super.id,
   });
 
   static AbsenceFileState fromJson(Map<String, dynamic> json) {
@@ -44,6 +47,8 @@ class AbsenceFileState extends BaseResponse {
       absenceType: json['absenceType'],
       absenceFileStatus: json['absenceFileStatus'],
       absenceReason: AbsenceReason.fromJson(json['absenceReason']),
+      comment: json['comment'],
+      creator: json['creator'] == null ? null : User.fromJson(json['creator']),
     );
   }
 }

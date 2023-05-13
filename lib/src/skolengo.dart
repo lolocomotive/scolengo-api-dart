@@ -14,12 +14,12 @@ import 'package:scolengo_api/src/models/Assiduite/absence_file.dart';
 import 'package:scolengo_api/src/models/Assiduite/absence_reason.dart';
 import 'package:scolengo_api/src/models/Evaluation/evaluation.dart';
 import 'package:scolengo_api/src/models/Evaluation/evaluation_settings.dart';
-import 'package:scolengo_api/src/models/Evaluation/preiodic_reports_file.dart';
 import 'package:scolengo_api/src/models/Homework/homework_assignments.dart';
 import 'package:scolengo_api/src/models/Messagerie/communication.dart';
 import 'package:scolengo_api/src/models/Messagerie/participant.dart';
 import 'package:scolengo_api/src/models/Messagerie/participation.dart';
 import 'package:scolengo_api/src/models/Messagerie/user_mail_settings.dart';
+import 'package:scolengo_api/src/models/School/attachment.dart';
 import 'package:scolengo_api/src/models/School/school.dart';
 import 'package:scolengo_api/src/models/School/school_info.dart';
 import 'package:scolengo_api/src/models/cache_provider.dart';
@@ -311,14 +311,14 @@ class Skolengo {
   }
 
   //TODO test this
-  Stream<SkolengoResponse<List<PeriodicReportsFile>>> getPeriodicReportsFiles(
+  Stream<SkolengoResponse<List<Attachment>>> getPeriodicReportsFiles(
       String studentId) async* {
     final results = _invokeApi('/periodic-reports-files', 'GET',
         params: {'filter[student.id]': studentId, 'include': 'period'});
     await for (final result in results) {
       yield SkolengoResponse(
         data: result['data']
-            .map<PeriodicReportsFile>((e) => PeriodicReportsFile.fromJson(e))
+            .map<Attachment>((e) => Attachment.fromJson(e))
             .toList(),
         raw: result,
       );
