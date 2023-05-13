@@ -162,7 +162,6 @@ class Skolengo {
       } else if (response.statusCode == 204) {
         yield {};
       } else {
-        yield Japx.decode(jsonDecode(responseBody));
         if (method == 'GET') {
           // Only cache GET requests, it doesn't make sense to cache other requests
           if (cacheProvider != null) {
@@ -174,6 +173,7 @@ class Skolengo {
             }
           }
         }
+        yield Japx.decode(jsonDecode(responseBody));
       }
     }
     if (!shouldCache && !shouldNetwork) {

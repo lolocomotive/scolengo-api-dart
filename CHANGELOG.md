@@ -1,3 +1,7 @@
+## 1.1.2
+
+Fix cache not being set sometimes
+
 ## 1.1.1
 
 Fix casting error
