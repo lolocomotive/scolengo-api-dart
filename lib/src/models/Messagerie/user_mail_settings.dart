@@ -34,7 +34,7 @@ class UsersMailSettings extends BaseResponse {
 }
 
 // ignore: constant_identifier_names
-enum FolderType { INBOX, SENT, DRAFTS, TRASH, PERSONAL, MODERATION }
+enum FolderType { INBOX, SENT, DRAFTS, TRASH, PERSONAL, MODERATION, OTHER }
 
 class Folder extends BaseResponse {
   String name;
@@ -55,7 +55,8 @@ class Folder extends BaseResponse {
       type: json['type'],
       name: json['name'],
       folderType: FolderType.values.firstWhere(
-          (element) => element.toString() == 'FolderType.${json['type']}'),
+          (element) => element.toString() == 'FolderType.${json['type']}',
+          orElse: () => FolderType.OTHER),
       position: json['position'],
     );
   }
@@ -144,7 +145,7 @@ class GroupContact extends Contact {
 }
 
 // ignore: constant_identifier_names
-enum LinkType { FAMILY, GROUP, SCHOOL }
+enum LinkType { FAMILY, GROUP, SCHOOL, STUDENT, OTHER }
 
 class LinkWithUser {
   LinkType type;
@@ -161,7 +162,9 @@ class LinkWithUser {
   static LinkWithUser fromJson(Map<String, dynamic> json) {
     return LinkWithUser(
       type: LinkType.values.firstWhere(
-          (element) => element.toString() == 'LinkType.${json['type']}'),
+        (element) => element.toString() == 'LinkType.${json['type']}',
+        orElse: () => LinkType.OTHER,
+      ),
       description: json['description'],
       groupId: json['groupId'],
       additionalInfos: json['additionalInfos'],

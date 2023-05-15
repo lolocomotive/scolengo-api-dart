@@ -43,7 +43,7 @@ class SchoolInfo extends BaseResponse {
       linkedInfoUrl: json['linkedInfoUrl'],
       linkedWebSiteUrl: json['linkedWebSiteUrl'],
       school: School.fromJson(json['school']),
-      author: json['author'] == null
+      author: json['author']?['person'] == null
           ? null
           : User.fromJson(json['author']['person']),
       illustration: json['illustration'] == null

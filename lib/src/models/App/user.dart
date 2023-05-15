@@ -12,12 +12,10 @@ class UserPermission {
   });
 
   static UserPermission fromJson(Map<String, dynamic> json) {
-    print(json['permittedOperations'][0]);
     return UserPermission(
       schoolId: json['schoolId'],
       service: json['service'],
-      permittedOperations:
-          json['permittedOperations'].map<String>((e) => e as String).toList(),
+      permittedOperations: json['permittedOperations'].cast<String>(),
     );
   }
 }

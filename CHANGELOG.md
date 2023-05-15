@@ -1,3 +1,7 @@
+## 1.1.3
+
+Fix unknown values of enums (folderType, linkType)
+
 ## 1.1.2
 
 Fix cache not being set sometimes
