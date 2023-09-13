@@ -53,7 +53,7 @@ class Lesson extends BaseResponse {
   String startDateTime;
   String endDateTime;
   String title;
-  String location;
+  String? location;
   dynamic locationComplement;
   bool canceled;
   List<LessonContent>? contents;
