@@ -1,10 +1,10 @@
 import 'package:scolengo_api/src/models/globals.dart';
 
 class Attachment extends BaseResponse {
-  String name;
-  String mimeType;
-  String mimeTypeLabel;
-  num size;
+  String? name;
+  String? mimeType;
+  String? mimeTypeLabel;
+  num? size;
   String url;
   Attachment({
     required this.name,
@@ -43,6 +43,7 @@ class PublicAttachment extends Attachment {
   });
 
   static PublicAttachment fromJson(Map<String, dynamic> json) {
+    print(json);
     return PublicAttachment(
       id: json['id'],
       type: json['type'],
