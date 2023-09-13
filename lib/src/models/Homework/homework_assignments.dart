@@ -4,9 +4,9 @@ import 'package:scolengo_api/src/models/School/attachment.dart';
 import 'package:scolengo_api/src/models/globals.dart';
 
 class HomeworkAssignment extends BaseResponse {
-  String title;
+  String? title;
   String html;
-  String dueDateTime;
+  String? dueDateTime;
   String? dueDate;
   bool done;
   bool deliverWorkOnline;
@@ -44,7 +44,7 @@ class HomeworkAssignment extends BaseResponse {
       id: json['id'],
       type: json['type'],
       title: json['title'],
-      html: json['html'],
+      html: json['html'] ?? '',
       dueDateTime: json['dueDateTime'],
       dueDate: json['dueDate'],
       done: json['done'],
