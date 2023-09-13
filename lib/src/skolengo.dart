@@ -374,7 +374,7 @@ class Skolengo {
       'filter[student.id]': studentId,
       'filter[dueDate][GE]': startDate,
       'filter[dueDate][LE]': endDate,
-      'include': 'subject,teacher,attachments,teacher.person',
+      'include': 'subject,teacher,teacher.person',
     });
     await for (final result in results) {
       yield SkolengoResponse(
