@@ -43,7 +43,6 @@ class PublicAttachment extends Attachment {
   });
 
   static PublicAttachment fromJson(Map<String, dynamic> json) {
-    print(json);
     return PublicAttachment(
       id: json['id'],
       type: json['type'],
